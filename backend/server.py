@@ -25,13 +25,17 @@ async def list_resources() -> list[Resource]:
     ]
 
 @app.read_resource()
-async def read_resource(uri: str) -> str:
+async def read_resource(uri: str | object) -> str:
     """Read a specific resource's content."""
-    if uri == "resume://experience":
+    # Handle possible variations in URI formatting between clients and servers
+    # The 'uri' might be passed as a Pydantic AnyUrl object by the SDK, so we cast it to string first.
+    normalized_uri = str(uri).rstrip('/')
+    
+    if normalized_uri == "resume://experience":
         return json.dumps(data.EXPERIENCE, indent=2)
-    elif uri == "resume://skills":
+    elif normalized_uri == "resume://skills":
         return json.dumps(data.SKILLS, indent=2)
-    raise ValueError(f"Unknown resource URI: {uri}")
+    raise ValueError(f"Unknown resource URI: {uri} (normalized: {normalized_uri})")
 
 
 @app.list_tools()
@@ -117,11 +121,29 @@ async def get_prompt(name: str, arguments: dict) -> PromptMessage:
          )
     )
 
-if __name__ == "__main__":
-    from mcp.server.stdio import stdio_server
-    
-    async def main():
-        async with stdio_server() as (read_stream, write_stream):
-            await app.run(read_stream, write_stream, app.create_initialization_options())
-            
-    asyncio.run(main())
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from mcp.server.sse import SseServerTransport
+from starlette.requests import Request
+
+fastapi_app = FastAPI()
+
+# Allow the React frontend to communicate with this server
+fastapi_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+sse = SseServerTransport("/messages")
+
+@fastapi_app.get("/sse")
+async def handle_sse(request: Request):
+    async with sse.connect_sse(request.scope, request.receive, request._send) as streams:
+        await app.run(streams[0], streams[1], app.create_initialization_options())
+
+@fastapi_app.post("/messages")
+async def handle_messages(request: Request):
+    await sse.handle_post_message(request.scope, request.receive, request._send)
