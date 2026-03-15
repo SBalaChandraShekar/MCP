@@ -197,7 +197,12 @@ async def sse_handler(request: Request):
 @fastapi_app.post("/messages")
 async def post_message_handler(request: Request):
     """Handle POST messages from the client."""
-    await sse.handle_post_message(request.scope, request.receive, request.scope["send"])
+    try:
+        await sse.handle_post_message(request.scope, request.receive, request._send)
+    except Exception as e:
+        print(f"CRITICAL POST ERROR: {e}")
+        traceback.print_exc()
+        raise e
 
 # Health check
 @fastapi_app.get("/health")
