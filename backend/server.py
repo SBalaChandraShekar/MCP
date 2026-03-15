@@ -272,4 +272,5 @@ if __name__ == "__main__":
     else:
         # Otherwise, run the FastAPI app (using uvicorn)
         import uvicorn
-        uvicorn.run(fastapi_app, host="0.0.0.0", port=8000)
+        port = int(os.environ.get("PORT", 8000))
+        uvicorn.run(fastapi_app, host="0.0.0.0", port=port)
