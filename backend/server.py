@@ -185,7 +185,8 @@ async def post_message_handler(request: Request):
 # Health check
 @fastapi_app.get("/health")
 async def health_check():
-    return {"status": "ok"}
+    print("Health check requested")
+    return {"status": "ok", "port": os.environ.get("PORT", "8000")}
 
 # --- AI Orchestration Helpers ---
 
@@ -273,4 +274,5 @@ if __name__ == "__main__":
         # Otherwise, run the FastAPI app (using uvicorn)
         import uvicorn
         port = int(os.environ.get("PORT", 8000))
+        print(f"Starting server on port {port}...")
         uvicorn.run(fastapi_app, host="0.0.0.0", port=port)

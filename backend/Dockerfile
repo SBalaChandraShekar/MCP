@@ -16,5 +16,5 @@ COPY . .
 # Expose port 8000 for the FastAPI server
 EXPOSE 8000
 
-# Run the server using uvicorn, respecting the PORT env var provided by the host
-CMD uvicorn server:fastapi_app --host 0.0.0.0 --port ${PORT:-8000}
+# Run the server using our entrypoint script
+CMD ["python", "server.py"]
