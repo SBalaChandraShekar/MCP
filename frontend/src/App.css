@@ -173,9 +173,111 @@ header {
     margin-bottom: 1rem;
 }
 
-.terminal-output {
-    color: #fcfcfa;
-    white-space: pre-wrap;
+.chat-container {
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.4);
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.message {
+    display: flex;
+    max-width: 80%;
+}
+
+.message.user {
+    align-self: flex-end;
+}
+
+.message.assistant {
+    align-self: flex-start;
+}
+
+.message-bubble {
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.user .message-bubble {
+    background: var(--accent-primary);
+    color: #fff;
+    border-bottom-right-radius: 2px;
+}
+
+.assistant .message-bubble {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 2px;
+}
+
+.message-bubble.typing {
+    color: var(--accent-secondary);
+    font-style: italic;
+    animation: pulse 1.5s infinite;
+}
+
+.chat-input-area {
+    padding: 1rem 1.5rem;
+    background: #1e1e1e;
+    display: flex;
+    gap: 1rem;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+}
+
+.chat-input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: #fff;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.chat-input:focus {
+    border-color: var(--accent-primary);
+}
+
+.send-button {
+    background: var(--accent-primary);
+    border: none;
+    border-radius: 8px;
+    padding: 0 1rem;
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.send-button:hover:not(:disabled) {
+    background: #10b981;
+    transform: scale(1.05);
+}
+
+.send-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
 }
 
 @keyframes fadeInDown {

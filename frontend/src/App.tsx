@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, Code, Terminal, Server, Zap } from 'lucide-react';
+import { Briefcase, Code, Server, Zap } from 'lucide-react';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 import './App.css';
@@ -14,11 +14,10 @@ interface Experience {
 function App() {
     const [experience, setExperience] = useState<Experience[]>([]);
     const [skills, setSkills] = useState<string[]>([]);
+    const [messages, setMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([]);
+    const [userInput, setUserInput] = useState("");
+    const [isTyping, setIsTyping] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
-    const [activeCommand, setActiveCommand] = useState<string>("mcp call-tool query_skill --skill=MCP");
-    const [terminalOutput, setTerminalOutput] = useState<string>(
-        "[\n  {\n    \"name\": \"MCP Portfolio\",\n    \"description\": \"An interactive portfolio powered by the Model Context Protocol\",\n    \"technologies\": [\"Python\", \"TypeScript\", \"React\", \"MCP\"]\n  }\n]"
-    );
 
     useEffect(() => {
         const connectToMCP = async () => {
@@ -61,6 +60,31 @@ function App() {
 
         connectToMCP();
     }, []);
+
+    const handleSendMessage = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!userInput.trim() || isTyping) return;
+
+        const userMsg = userInput.trim();
+        setUserInput("");
+        setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
+        setIsTyping(true);
+
+        try {
+            const response = await fetch("http://localhost:8000/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userMsg })
+            });
+            const data = await response.json();
+            setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
+        } catch (error) {
+            console.error("Chat error:", error);
+            setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I lost my connection to the backend. Please check if the server is running." }]);
+        } finally {
+            setIsTyping(false);
+        }
+    };
 
     return (
         <div className="app-container">
@@ -117,24 +141,46 @@ function App() {
                     </div>
                 </section>
 
-                {/* Interactive Terminal Demo Panel */}
+                {/* Interactive AI Chat Panel */}
                 <section className="glass-panel terminal-panel">
-                    <div className="panel-header" style={{ borderBottom: 'none', padding: 0 }}>
+                    <div className="panel-header" style={{ borderBottom: 'none', padding: 15 }}>
                         <div className="terminal-header" style={{ width: '100%', display: 'flex', alignItems: 'center' }}>
                             <div className="term-dot red"></div>
                             <div className="term-dot yellow"></div>
                             <div className="term-dot green"></div>
-                            <span style={{ marginLeft: '1rem', color: '#888', fontSize: '0.85rem' }}>AI Agent Simulation</span>
+                            <span style={{ marginLeft: '1rem', color: '#888', fontSize: '0.85rem' }}>AI Career Consultant</span>
                         </div>
                     </div>
-                    <div className="terminal-text">
-                        <div className="terminal-command">
-                            <Terminal size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '8px' }} />
-                            <span style={{ color: '#fff' }}>$ {activeCommand}</span>
+                    <div className="chat-container">
+                        <div className="chat-messages">
+                            <div className="message assistant">
+                                <div className="message-bubble">
+                                    Hello! I'm your AI career consultant. I have real-time access to my developer's resume via the Model Context Protocol. What would you like to know?
+                                </div>
+                            </div>
+                            {messages.map((msg, i) => (
+                                <div key={i} className={`message ${msg.role}`}>
+                                    <div className="message-bubble">{msg.content}</div>
+                                </div>
+                            ))}
+                            {isTyping && (
+                                <div className="message assistant">
+                                    <div className="message-bubble typing">Thinking...</div>
+                                </div>
+                            )}
                         </div>
-                        <div className="terminal-output">
-                            {terminalOutput}
-                        </div>
+                        <form onSubmit={handleSendMessage} className="chat-input-area">
+                            <input
+                                type="text"
+                                value={userInput}
+                                onChange={(e) => setUserInput(e.target.value)}
+                                placeholder="Ask about my AI projects, fullstack experience..."
+                                className="chat-input"
+                            />
+                            <button type="submit" className="send-button" disabled={isTyping}>
+                                <Zap size={18} />
+                            </button>
+                        </form>
                     </div>
                 </section>
 
