@@ -160,9 +160,12 @@ from starlette.requests import Request
 fastapi_app = FastAPI()
 
 # Allow the React frontend to communicate with this server
+# In production, set ALLOWED_ORIGINS to your frontend domain (e.g., https://yourportfolio.com)
+allowed_origins = os.environ.get("ALLOWED_ORIGINS", "*").split(",")
+
 fastapi_app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
