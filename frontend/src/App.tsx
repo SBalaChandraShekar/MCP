@@ -22,13 +22,16 @@ function App() {
     useEffect(() => {
         const connectToMCP = async () => {
             try {
-                const transport = new SSEClientTransport(new URL("http://localhost:8000/sse"));
+                const backendUrl = "http://127.0.0.1:8000";
+                console.log("Attempting to connect to MCP at:", `${backendUrl}/sse/`);
+                const transport = new SSEClientTransport(new URL(`${backendUrl}/sse/`));
                 const client = new Client(
                     { name: "portfolio-frontend", version: "1.0.0" },
                     { capabilities: {} }
                 );
 
                 await client.connect(transport);
+                console.log("Connected to MCP via SSE");
                 setIsConnected(true);
 
                 // Fetch Experience
