@@ -177,14 +177,22 @@ fastapi_app.add_middleware(
     expose_headers=["*"],
 )
 
+import traceback
 # Create the SSE transport
 sse = SseServerTransport("/messages")
 
 @fastapi_app.get("/sse")
 async def sse_handler(request: Request):
     """Event stream for MCP messages."""
-    async with sse.connect_sse(request.scope, request.receive, request.scope["send"]) as streams:
-        await app.run(streams[0], streams[1], app.create_initialization_options())
+    print("SSE connection attempt received")
+    try:
+        async with sse.connect_sse(request.scope, request.receive, request._send) as streams:
+            print("SSE transport connected, running MCP server...")
+            await app.run(streams[0], streams[1], app.create_initialization_options())
+    except Exception as e:
+        print(f"CRITICAL SSE ERROR: {e}")
+        traceback.print_exc()
+        raise e
 
 @fastapi_app.post("/messages")
 async def post_message_handler(request: Request):
