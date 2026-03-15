@@ -273,6 +273,7 @@ if __name__ == "__main__":
     else:
         # Otherwise, run the FastAPI app (using uvicorn)
         import uvicorn
-        port = int(os.environ.get("PORT", 8000))
+        # We lock this to 8000 to match your Railway Networking settings
+        port = 8000
         print(f"Starting server on port {port}...")
         uvicorn.run(fastapi_app, host="0.0.0.0", port=port)
