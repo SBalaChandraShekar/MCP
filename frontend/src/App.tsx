@@ -22,7 +22,7 @@ function App() {
     useEffect(() => {
         const connectToMCP = async () => {
             try {
-                const backendUrl = "http://127.0.0.1:8000";
+                const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:8000";
                 console.log("Attempting to connect to MCP at:", `${backendUrl}/sse/`);
                 const transport = new SSEClientTransport(new URL(`${backendUrl}/sse/`));
                 const client = new Client(
@@ -74,7 +74,9 @@ function App() {
         setIsTyping(true);
 
         try {
-            const response = await fetch("http://localhost:8000/api/chat", {
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:8000";
+            console.log("Sending chat message to:", `${backendUrl}/api/chat`);
+            const response = await fetch(`${backendUrl}/api/chat`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: userMsg })

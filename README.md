@@ -52,7 +52,7 @@ Claude Desktop and most other assistants prefer the `stdio` transport for local 
         "mcp-portfolio": {
           "command": "python",
           "args": [
-            "c:/Users/S.BALACHANDRASHEKAR/Desktop/bala/Projects/MCP/backend/server.py",
+            "./backend/server.py",
             "--stdio"
           ]
         }
@@ -67,6 +67,32 @@ If you deploy this server to the web, you can connect via SSE. Since some client
 npx @modelcontextprotocol/inspector http://localhost:8000/sse
 ```
 
+## Deployment with Docker (Recommended)
+
+The easiest way to deploy the entire system (Backend + Frontend) is using Docker Compose.
+
+1.  **Ensure Docker is installed** on your machine.
+2.  **Add your API Key** to `./backend/.env`.
+3.  **Run the entire system:**
+    ```powershell
+    docker-compose up --build
+    ```
+
+### 🌐 Deploying to Public (Cloud)
+When you are ready to host your portfolio on a public domain (e.g., `https://my-portfolio.com`):
+
+1.  Open `docker-compose.yml`.
+2.  Update the `VITE_BACKEND_URL` build argument for the frontend:
+    ```yaml
+    args:
+      - VITE_BACKEND_URL=https://my-portfolio-api.com
+    ```
+3.  Rebuild the containers: `docker-compose up --build`.
+
+- The **Frontend** will be available at [http://localhost:3000](http://localhost:3000).
+- The **Backend** (MCP & Chat API) will be available at [http://localhost:8000](http://localhost:8000).
+
 ## Project Structure
-- `backend/`: Python FastAPI server implementing MCP (supports both SSE and stdio).
-- `frontend/`: React application using the MCP SDK to communicate with the backend via SSE.
+- `backend/`: Python FastAPI server implementing MCP (SSE & stdio support).
+- `frontend/`: React application displaying portfolio data via MCP SSE.
+- `docker-compose.yml`: Multi-container orchestration for the full system.
