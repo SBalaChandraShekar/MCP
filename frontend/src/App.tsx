@@ -25,8 +25,8 @@ function App() {
                 const rawBackendUrl = import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:8000";
                 const backendUrl = rawBackendUrl.replace(/\/+$/, "");
                 
-                console.log("Attempting to connect to MCP at:", `${backendUrl}/sse/`);
-                const transport = new SSEClientTransport(new URL(`${backendUrl}/sse/`));
+                console.log("Attempting to connect to MCP at:", `${backendUrl}/sse`);
+                const transport = new SSEClientTransport(new URL(`${backendUrl}/sse`));
                 const client = new Client(
                     { name: "portfolio-frontend", version: "1.0.0" },
                     { capabilities: {} }

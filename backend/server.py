@@ -156,18 +156,25 @@ from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from mcp.server.sse import SseServerTransport
 from starlette.requests import Request
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
-fastapi_app = FastAPI()
+fastapi_app = FastAPI(strict_slashes=False)
+fastapi_app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
 # Allow the React frontend to communicate with this server
 # In production, set ALLOWED_ORIGINS to your frontend domain (e.g., https://yourportfolio.com)
-allowed_origins = os.environ.get("ALLOWED_ORIGINS", "*").split(",")
+allowed_origins_raw = os.environ.get("ALLOWED_ORIGINS", "*")
+if allowed_origins_raw == "*":
+    allowed_origins = ["*"]
+else:
+    allowed_origins = [o.strip() for o in allowed_origins_raw.split(",")]
 
 fastapi_app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Create the SSE transport
@@ -175,12 +182,14 @@ sse = SseServerTransport("/messages")
 
 @fastapi_app.get("/sse")
 async def sse_handler(request: Request):
-    async with sse.connect_sse(request.scope, request.receive, request._send) as streams:
+    """Event stream for MCP messages."""
+    async with sse.connect_sse(request.scope, request.receive, request.scope["send"]) as streams:
         await app.run(streams[0], streams[1], app.create_initialization_options())
 
 @fastapi_app.post("/messages")
 async def post_message_handler(request: Request):
-    await sse.handle_post_message(request.scope, request.receive, request._send)
+    """Handle POST messages from the client."""
+    await sse.handle_post_message(request.scope, request.receive, request.scope["send"])
 
 # Health check
 @fastapi_app.get("/health")
